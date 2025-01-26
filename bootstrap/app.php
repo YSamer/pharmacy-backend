@@ -5,7 +5,11 @@ use App\Http\Middleware\LocalizationMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Support\Facades\App;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,5 +26,56 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function ($exception, Request $request) {
+            // For API requests
+            if ($request->is('api/*')) {
+                // Handle different types of exceptions
+                if ($exception instanceof NotFoundHttpException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Resource not found.',
+                        'errors' => [
+                            'detail' => $exception->getMessage()
+                        ],
+                    ], 404);
+                }
+
+                if ($exception instanceof UnauthorizedHttpException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unauthorized access.',
+                        'errors' => [
+                            'detail' => $exception->getMessage()
+                        ],
+                    ], 401);
+                }
+
+                if ($exception instanceof ModelNotFoundException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The requested model could not be found.',
+                        'errors' => [
+                            'detail' => $exception->getMessage()
+                        ],
+                    ], 404);
+                }
+
+                if ($exception instanceof ValidationException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation errors occurred.',
+                        'errors' => $exception->errors(),
+                    ], 422);
+                }
+
+                // General fallback for any other unhandled exceptions
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An unexpected error occurred.',
+                    'errors' => [
+                        'detail' => $exception->getMessage()
+                    ],
+                ], 500);
+            }
+        });
     })->create();
