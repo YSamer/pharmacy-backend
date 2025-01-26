@@ -6,11 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\UserVerifyPhoneRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Services\UserAuthService;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class UserAuthController extends Controller
 {
@@ -22,146 +20,85 @@ class UserAuthController extends Controller
 
     public function reqister(UserRegisterRequest $request)
     {
-        try {
-            $data = $request->validated();
+        $data = $request->validated();
 
-            $user = $this->userAuthService->registerUser($data);
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to register user.',
-                ], 500);
-            }
-
-            $this->userAuthService->sendOTP($user);
-
-            return response()->json([
-                'data' => [
-                    'user' => $user,
-                ],
-                'message' => 'User registered successfully.',
-                'success' => true,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('User registration failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+        $user = $this->userAuthService->registerUser($data);
+        if (!$user) {
+            return $this->errorResponse('Failed to register user.', 500);
         }
+
+        $this->userAuthService->sendOTP($user);
+
+        return $this->successResponse(
+            ['user' => new UserResource($user)],
+            'User registered successfully.',
+        );
     }
 
     public function login(UserLoginRequest $request)
     {
-        try {
-            $data = $request->validated();
 
-            $user = $this->userAuthService->loginUser($data);
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid phone number.',
-                ], 401);
-            }
+        $data = $request->validated();
 
-            $this->userAuthService->sendOTP($user);
-
-            return response()->json([
-                'data' => [
-                    'user' => $user,
-                ],
-                'message' => 'User Login successfully.',
-                'success' => true,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('User login failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+        $user = $this->userAuthService->loginUser($data);
+        if (!$user) {
+            return $this->errorResponse(
+                'Invalid phone number.',
+                401
+            );
         }
+
+        $this->userAuthService->sendOTP($user);
+
+        return $this->successResponse(
+            ['user' => new UserResource($user)],
+            'User Login successfully.',
+        );
     }
 
     public function verifyPhone(UserVerifyPhoneRequest $request)
     {
-        try {
-            $data = $request->validated();
+        $data = $request->validated();
 
-            $user = $this->userAuthService->verifyPhone($data);
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid OTP.',
-                ], 401);
-            }
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-
-            return response()->json([
-                'data' => [
-                    'user' => $user,
-                    'token' => $token,
-                ],
-                'message' => 'User Logged In successfully.',
-                'success' => true,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('User Logged In failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+        $user = $this->userAuthService->verifyPhone($data);
+        if (!$user) {
+            return $this->errorResponse(
+                'Invalid OTP.',
+                401
+            );
         }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->successResponse(
+            ['user' => new UserResource($user), 'token' => $token],
+            'User Login successfully.',
+        );
     }
 
     public function logout(Request $request)
     {
-        try {
-            $request->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()->delete();
 
-            return response()->json([
-                'message' => 'User logged out successfully.',
-                'success' => true,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('User logged out failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->successResponse(
+            null,
+            'User logged out successfully.',
+        );
     }
 
     public function user(Request $request)
     {
-        try {
-            $user = $request->user();
+        $user = $request->user();
 
-            if ($user) {
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'user' => $user,
-                    ],
-                    'message' => 'User authenticated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication failed. User not found.',
-            ], 401);
-        } catch (\Exception $e) {
-            Log::error('User Auto logged In failed: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+        if (!$user) {
+            return $this->successResponse(
+                null,
+                'Authentication failed. User not found.',
+            );
         }
+        return $this->successResponse(
+            ['user' => new UserResource($user)],
+            'User authenticated successfully.',
+        );
     }
 }
