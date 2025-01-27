@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('user')->group(function () {
-    Route::post('register', [UserAuthController::class, 'reqister']);
+    Route::post('register', [UserAuthController::class, 'register']);
     Route::post('login', [UserAuthController::class, 'login']);
     Route::post('verify-phone', [UserAuthController::class, 'verifyPhone']);
 

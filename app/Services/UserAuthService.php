@@ -12,9 +12,14 @@ class UserAuthService
 
     public function registerUser(array $data): ?User
     {
-        $data['image'] = storeFile($data['image'] ?? null, 'images');
+        try {
+            $data['image'] = storeFile($data['image'] ?? null, 'images');
 
-        $user = User::create($data);
+            $user = User::create($data);
+        } catch (\Exception $e) {
+            Log::error('Failed to register user', ['error' => $e->getMessage()]);
+            return null;
+        }
 
         return $user;
     }
@@ -23,18 +28,21 @@ class UserAuthService
     {
         $user = User::where('phone', $data['phone'])->first();
 
-        if ($user) {
-            return $user;
+        if (!$user) {
+            Log::warning("Login attempt failed for phone: {$data['phone']}");
+            return null;
         }
 
-        return null;
+        return $user;
     }
 
     public function verifyPhone(array $data): ?User
     {
-        $user = User::where('phone', $data['phone'])->first();
+        $user = User::where('phone', $data['phone'])
+            ->whereNotNull('otp')
+            ->first();
 
-        if ($user && $user->otp === $data['otp']) {
+        if ($user && Hash::check($data['otp'], $user->otp)) {
             $user->otp = null;
             $user->save();
 
@@ -46,9 +54,9 @@ class UserAuthService
 
     public function sendOTP(User $user): ?string
     {
-        // $otp = mt_rand(1111, 9999);
+        // $otp = random_int(1111, 9999);
         $otp = '1234';
-        $user->otp = $otp;
+        $user->otp = Hash::make($otp);
         $user->save();
 
         event(new SendOtpEvent($user, $otp));
@@ -59,7 +67,7 @@ class UserAuthService
     public function sendSMS($user, $otp): bool
     {
         // Send SMS using SMS Gateway API or any other service
-        Log::info('Send SMS using SMS Gateway API or any other service');
+        Log::info("Sending SMS to {$user->phone}: Your OTP is $otp");
 
         return true;
     }

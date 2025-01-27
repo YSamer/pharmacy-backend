@@ -18,20 +18,20 @@ class UserAuthController extends Controller
         $this->userAuthService = $userAuthService;
     }
 
-    public function reqister(UserRegisterRequest $request)
+    public function register(UserRegisterRequest $request)
     {
         $data = $request->validated();
 
         $user = $this->userAuthService->registerUser($data);
         if (!$user) {
-            return $this->errorResponse('Failed to register user.', 500);
+            return $this->errorResponse(__('messages.register_fail'), 500);
         }
 
         $this->userAuthService->sendOTP($user);
 
         return $this->successResponse(
             ['user' => new UserResource($user)],
-            'User registered successfully.',
+            __('messages.register_success'),
         );
     }
 
@@ -42,17 +42,14 @@ class UserAuthController extends Controller
 
         $user = $this->userAuthService->loginUser($data);
         if (!$user) {
-            return $this->errorResponse(
-                'Invalid phone number.',
-                401
-            );
+            return $this->errorResponse(__('messages.login_fail'), 401);
         }
 
         $this->userAuthService->sendOTP($user);
 
         return $this->successResponse(
             ['user' => new UserResource($user)],
-            'User Login successfully.',
+            __('messages.login_success'),
         );
     }
 
@@ -62,17 +59,14 @@ class UserAuthController extends Controller
 
         $user = $this->userAuthService->verifyPhone($data);
         if (!$user) {
-            return $this->errorResponse(
-                'Invalid OTP.',
-                401
-            );
+            return $this->errorResponse(__('messages.verify_fail'), 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->successResponse(
             ['user' => new UserResource($user), 'token' => $token],
-            'User Login successfully.',
+            __('messages.verify_success'),
         );
     }
 
@@ -82,7 +76,7 @@ class UserAuthController extends Controller
 
         return $this->successResponse(
             null,
-            'User logged out successfully.',
+            __('messages.logout_success'),
         );
     }
 
@@ -93,12 +87,12 @@ class UserAuthController extends Controller
         if (!$user) {
             return $this->successResponse(
                 null,
-                'Authentication failed. User not found.',
+                __('messages.auth_failed'),
             );
         }
         return $this->successResponse(
             ['user' => new UserResource($user)],
-            'User authenticated successfully.',
+            __('messages.auth_success'),
         );
     }
 }
