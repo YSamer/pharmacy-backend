@@ -40,10 +40,12 @@ class UserAuthService
     {
         $user = User::where('phone', $data['phone'])
             ->whereNotNull('otp')
+            ->where('otp_expires_at', '>=', now())
             ->first();
 
         if ($user && Hash::check($data['otp'], $user->otp)) {
             $user->otp = null;
+            $user->otp_expires_at = null;
             $user->save();
 
             return $user;
@@ -57,6 +59,7 @@ class UserAuthService
         // $otp = random_int(1111, 9999);
         $otp = '1234';
         $user->otp = Hash::make($otp);
+        $user->otp_expires_at = now()->addMinutes(1);
         $user->save();
 
         event(new SendOtpEvent($user, $otp));

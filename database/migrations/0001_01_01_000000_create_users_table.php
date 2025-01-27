@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->string('device_token')->nullable();
             $table->rememberToken();
-            $table->timestamp('otp_expired_at')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

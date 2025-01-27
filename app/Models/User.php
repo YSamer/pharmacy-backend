@@ -36,10 +36,6 @@ class User extends Authenticatable
     protected $hidden = [
         'otp',
         'remember_token',
-        'otp_expired_at',
+        'otp_expires_at',
     ];
 }
-
-
-// $user->otp_expired_at = Carbon::now()->addMinutes(5); // OTP expires in 5 minutes
-// if ($user->otp_expired_at < Carbon::now()) {
