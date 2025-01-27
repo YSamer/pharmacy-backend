@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 function storeFile(?UploadedFile $file, ?string $directory = 'files'): ?string
 {
@@ -11,4 +12,9 @@ function storeFile(?UploadedFile $file, ?string $directory = 'files'): ?string
     } else {
         return null;
     }
+}
+
+function deleteFile(string $filePath): bool
+{
+    return Storage::delete($filePath);
 }

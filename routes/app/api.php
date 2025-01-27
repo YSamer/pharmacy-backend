@@ -16,5 +16,6 @@ Route::prefix('user')->group(function () {
         Route::get('logout', [UserAuthController::class, 'logout']);
         Route::get('auto-login', [UserAuthController::class, 'user']);
         Route::get('profile', [UserAuthController::class, 'user']);
+        Route::post('update-profile', [UserAuthController::class, 'updateProfile']);
     });
 });

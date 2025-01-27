@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
+use App\Http\Requests\UserUpdateProfileRequest;
 use App\Http\Requests\UserVerifyPhoneRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -93,6 +94,21 @@ class UserAuthController extends Controller
         return $this->successResponse(
             ['user' => new UserResource($user)],
             __('messages.auth_success'),
+        );
+    }
+
+    public function updateProfile(UserUpdateProfileRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = $this->userAuthService->updateProfile($data);
+        if (!$user) {
+            return $this->errorResponse(__('messages.update_profile_fail'), 401);
+        }
+
+        return $this->successResponse(
+            ['user' => new UserResource($user)],
+            __('messages.update_profile_success'),
         );
     }
 }

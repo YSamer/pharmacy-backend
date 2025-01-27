@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\SendOtpEvent;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -52,6 +53,35 @@ class UserAuthService
         }
 
         return null;
+    }
+
+    public function updateProfile(array $data): ?User
+    {
+        $user = Auth::user();
+        if (!$user || !$user instanceof User) {
+            Log::warning('Update profile attempt without authenticated user.');
+            return null;
+        }
+
+        if (isset($data['name'])) {
+            $user->name = $data['name'];
+        }
+
+        if (isset($data['email'])) {
+            $user->email = $data['email'];
+        }
+
+        if (isset($data['image'])) {
+            if ($user->image) {
+                deleteFile($user->image);
+            }
+
+            $user->image = storeFile($data['image'] ?? null, 'images');
+        }
+
+        $user->save();
+
+        return $user;
     }
 
     public function sendOTP(User $user): ?string

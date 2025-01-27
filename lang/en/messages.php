@@ -10,4 +10,6 @@ return [
     'verify_fail' => 'Invalid OTP.',
     'auth_failed' => 'Authentication failed. User not found.',
     'auth_success' => 'User authenticated successfully.',
+    'update_profile_fail' => 'Failed to update profile.',
+    'update_profile_success' => 'Update profile successfully.',
 ];
