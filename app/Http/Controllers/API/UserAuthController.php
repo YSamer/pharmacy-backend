@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserDeleteAccountRequest;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\UserUpdateProfileRequest;
@@ -13,7 +14,7 @@ use App\Services\UserAuthService;
 
 class UserAuthController extends Controller
 {
-    public UserAuthService $userAuthService;
+    private UserAuthService $userAuthService;
     public function __construct(UserAuthService $userAuthService)
     {
         $this->userAuthService = $userAuthService;
@@ -73,7 +74,7 @@ class UserAuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->userAuthService->logout();
 
         return $this->successResponse(
             null,
@@ -111,4 +112,20 @@ class UserAuthController extends Controller
             __('messages.update_profile_success'),
         );
     }
+
+    public function deleteAccount(UserDeleteAccountRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = $this->userAuthService->deleteAccount($data);
+        if (!$user) {
+            return $this->errorResponse(__('messages.auth_failed'), 401);
+        }
+
+        return $this->successResponse(
+            null,
+            __('messages.account_delete_success'),
+        );
+    }
+
 }

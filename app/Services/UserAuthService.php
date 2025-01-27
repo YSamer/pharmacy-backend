@@ -55,6 +55,18 @@ class UserAuthService
         return null;
     }
 
+    public function logout(): bool
+    {
+        $user = Auth::user();
+        if (!$user || !$user instanceof User) {
+            Log::warning('Logout attempt without authenticated user.');
+            return false;
+        }
+        $user->tokens()->delete();
+
+        return true;
+    }
+
     public function updateProfile(array $data): ?User
     {
         $user = Auth::user();
@@ -82,6 +94,23 @@ class UserAuthService
         $user->save();
 
         return $user;
+    }
+
+    public function deleteAccount(array $data): bool
+    {
+        $user = User::where('phone', operator: $data['phone'])->first();
+        if (!$user) {
+            Log::warning('Delete account attempt without authenticated user.');
+            return false;
+        }
+
+        if ($user && $user->id === Auth::id()) {
+            $this->logout();
+        }
+
+        $user->delete();
+
+        return true;
     }
 
     public function sendOTP(User $user): ?string

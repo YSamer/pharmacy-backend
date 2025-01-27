@@ -12,4 +12,5 @@ return [
     'auth_success' => 'User authenticated successfully.',
     'update_profile_fail' => 'Failed to update profile.',
     'update_profile_success' => 'Update profile successfully.',
+    'account_delete_success' => 'Account Delete successfully.',
 ];

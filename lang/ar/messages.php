@@ -12,4 +12,5 @@ return [
     'auth_success' => 'نجح الدخول للمستخدم.',
     'update_profile_fail' => 'خطأ في تحديث البيانات الشخصية.',
     'update_profile_success' => 'تم تحديث البيانات الشخصية بنجاح.',
+    'account_delete_success' => 'تم حذف الحساب.',
 ];
