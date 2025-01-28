@@ -58,7 +58,7 @@ class UserAuthService
     public function logout(): bool
     {
         $user = Auth::user();
-        if (!$user || !$user instanceof User) {
+        if (!$user instanceof User) {
             Log::warning('Logout attempt without authenticated user.');
             return false;
         }
@@ -70,7 +70,7 @@ class UserAuthService
     public function updateProfile(array $data): ?User
     {
         $user = Auth::user();
-        if (!$user || !$user instanceof User) {
+        if (!$user instanceof User) {
             Log::warning('Update profile attempt without authenticated user.');
             return null;
         }
