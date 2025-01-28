@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleExceptions;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleValidationErrors;
 use App\Http\Middleware\LocalizationMiddleware;
 use Illuminate\Foundation\Application;
@@ -25,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleValidationErrors::class,
             LocalizationMiddleware::class,
             HandleExceptions::class,
+        ]);
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

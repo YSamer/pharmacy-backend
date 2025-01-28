@@ -127,5 +127,4 @@ class UserAuthController extends Controller
             __('messages.account_delete_success'),
         );
     }
-
 }
